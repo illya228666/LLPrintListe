@@ -10,6 +10,7 @@ Public Function LLPrintListe5640(frm As Form, _
 
     'Mode = 2 -> Vorschau
     'Mode = 1 -> Druck
+    'Mode = 4 -> Ablage
     'Mode = 0 -> Druck-Wiederholung (Druckstatus darf nicht = 0 gesetzt werden.)
     'Tmp = True -> Der Schalter wird nur bei der Vorschau noch nicht gedruckter Belege gesetzt.
     'Die Rechnungsdaten wurden zuvor in Tmp Tabellen gespeichert.
@@ -289,11 +290,11 @@ Public Function LLPrintListe5640(frm As Form, _
         If IsEBelegDoc Then LL1.LlDefineVariableExt "ERechnungArt", CInt(gEnmKudnenERechnungType), LL_NUMERIC
             
         Select Case Mode
-            
-            Case 1
-                            
+
+            Case 1, 4
+
                 intSteuerTextLkz = objDruckOptionen.CurrentSteuerValue
-                
+
                 'CSBmk <STEUER-CODE HAUPT>
                 strStCodeH = GetStCodeFromSteuerText(CStr(intSteuerTextLkz), "Rng")
 
@@ -499,7 +500,7 @@ Public Function LLPrintListe5640(frm As Form, _
 
             If Not Save Then
 
-                glRet = LL1.LlPrintOptionsDialog(frm.hwnd, "Drucker")
+                If Mode <> 4 Then glRet = LL1.LlPrintOptionsDialog(frm.hwnd, "Drucker")
 
                 'Abbruch
                 If glRet = LL_ERR_USER_ABORTED Then
@@ -509,21 +510,22 @@ Public Function LLPrintListe5640(frm As Form, _
 
                     If Not SammelDruck Then
 
-                        If Mode = 1 Then
+                        If Mode = 1 Or Mode = 4 Then
                             rsH!Druck = 0
+                            rsH!belegDatum = Null
                             rsH.Update
                         End If
-                            
+
                     End If
 
                     Exit Function
 
                 End If
-  
+
                 If Mode < 2 Then SaveSetting "SP50000", "SP56000", "SP56430_PRNOPT_COPIES", LL1.LlPrintGetOption(LL_PRNOPT_COPIES)
 
             End If
-                
+
         End If
 
         'Nach Combit ist es unbedingt notwendig, die von LlPrintSetOption gesetzte Kopienanzahl
@@ -598,13 +600,13 @@ Public Function LLPrintListe5640(frm As Form, _
             
         '<Added by: DFiebach at: 11.07.2024, Ver.: 6.7.101 >
         '# Texte im Hauptsatz speichern. Damit in der PDF und ERechnung das gleiche steht.
-        If Mode = 1 Then                                                                           'Nur beim Druck.
+        If Mode = 1 Or Mode = 4 Then                                                               'Nur beim Druck.
 
             rsH!ERechnungArt = modERechnung.GetERechnungTypeValueForDB(gEnmKudnenERechnungType)    'DF 23.07.2024 , Ver.: 6.7.101
             rsH!StCode = strStCodeH
-     
+
             rsH.Update
-     
+
             Call SetStCode(E_DATATYPE.Lademittelfaktura_Rechnung, 1, rsH!BelegID, intSteuerTextLkz, intSteuerTyp, tmp, GintBelegArt) ' An der Stelle wird zw. SF-RNG und -GUT nicht unterschieden, da beide in der gelichen Tabelle gespeichert werden.
 
         End If
@@ -694,7 +696,7 @@ Public Function LLPrintListe5640(frm As Form, _
         glRet = LL1.LlPrintEnd(0)
     
         'DH, 22.06.2017, ,6.4.126, Nur wenn es sich um einen scharfen Druck handelt
-        If Mode = 1 And Not tmp Then
+        If (Mode = 1 Or Mode = 4) And Not tmp Then
 
             'DH, 02.11.2015, 6.4.109, Aus der Speichern-Methode des Hauptforms hier her verlegt, damit das Druckkennzeichen erst gesetzt wird, wenn der Druck auch wirklich erfolgte
             If rsH.Fields("ZwAblage") = 0 Then
@@ -709,7 +711,7 @@ Public Function LLPrintListe5640(frm As Form, _
                 
         End If
     
-        If Mode = 1 And Not tmp Then
+        If (Mode = 1 Or Mode = 4) And Not tmp Then
 
             Protokoll iAppend, "Einzeldruck -> BelegID: " & BelegID & " SteuerPfl: " & SteuerPfl & " SteuerFr: " & SteuerFr & " Ust: " & Ust & " Betrag: " & Betrag
 
@@ -719,7 +721,7 @@ Public Function LLPrintListe5640(frm As Form, _
         'CSBmk <PDF-ARCHIVIERUNG>
         'Beim Preview-Druck Preview anzeigen und dann Preview-Datei (.LL) löschen
     
-        If Mode >= 2 Then 'PrintMode = LL_PRINT_PREVIEW
+        If Mode > 1 And Mode <> 4 Then 'PrintMode = LL_PRINT_PREVIEW       auser Ablage
 
             If Save Then                                                                            'Archivieren
 
@@ -804,7 +806,7 @@ Public Function LLPrintListe5640(frm As Form, _
 
     End If
 
-    If Mode = 0 Or Mode = 1 Then                                            'DH, 14.03.2013, Nach dem Druck/Druckwiederholung muessen BelegNr und -Datum gesperrt
+    If Mode = 0 Or Mode = 1 Or Mode = 4 Then                                 'DH, 14.03.2013, Nach dem Druck/Druckwiederholung muessen BelegNr und -Datum gesperrt
 
         objDruckOptionen.EnableBelegDatum = False
         objDruckOptionen.EnableBelegNr = False
@@ -846,11 +848,12 @@ Fehler:
    
     LLPrintListe5640 = Err.number
 
-    If Mode = 1 Then
+    If Mode = 1 Or Mode = 4 Then
         If Not SammelDruck Then
             If Not rsH Is Nothing Then
                 If rsH.RecordCount > 0 Then
                     rsH!Druck = 0
+                    rsH!belegDatum = Null
                     rsH.Update
                 End If
             End If
