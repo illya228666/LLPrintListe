@@ -1,4 +1,4 @@
-Public Function LLPrintListe(frm As Form, _
+Public Function LLPrintListe5640(frm As Form, _
                              LL1 As ListLabel.ListLabel, _
                              BelegID As Long, _
                              Mode As Integer, _
@@ -505,7 +505,7 @@ Public Function LLPrintListe(frm As Form, _
                 If glRet = LL_ERR_USER_ABORTED Then
 
                     LL1.LlPrintEnd 0                    'DH, 11.07.2013, 6.2.100, Bei Abbruch den Druckjob beenden
-                    LLPrintListe = LL_ERR_USER_ABORTED
+                    LLPrintListe5640 = LL_ERR_USER_ABORTED
 
                     If Not SammelDruck Then
 
@@ -844,7 +844,7 @@ Exit_PrintListe:
   
 Fehler:
    
-    LLPrintListe = Err.number
+    LLPrintListe5640 = Err.number
 
     If Mode = 1 Then
         If Not SammelDruck Then
@@ -859,7 +859,7 @@ Fehler:
 
     Debug.Print "LL Fehler: " & glRet
 
-    Call FehlerErklärung("SP56000B", "LLPrintListe()")
+    Call FehlerErklärung("SP56000B", "LLPrintListe5640()")
     GoSub Exit_PrintListe
 
 End Function
