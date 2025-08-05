@@ -1,4 +1,4 @@
-Public Function LLPrintListe(frm As Form, _
+Public Function LLPrintListe2800(frm As Form, _
                              LL1 As ListLabel.ListLabel, _
                              BelegID As Long, _
                              Mode As Integer, _
@@ -568,7 +568,7 @@ Public Function LLPrintListe(frm As Form, _
                             
                         LL1.LlPrintEnd 0
 
-                        LLPrintListe = glRet
+                        LLPrintListe2800 = glRet
                         
                         If Not SammelDruck Then
 
@@ -650,7 +650,7 @@ Public Function LLPrintListe(frm As Form, _
                         
                         LL1.LlPrintEnd 0
 
-                        LLPrintListe = LL_ERR_USER_ABORTED
+                        LLPrintListe2800 = LL_ERR_USER_ABORTED
                             
                         glRet = LL1.LlPreviewDeleteFiles(ArbeitsplatzPfad & "\SP52800.LL", "")
                             
@@ -1159,7 +1159,7 @@ Public Function LLPrintListe(frm As Form, _
   
 Fehler:
    
-    LLPrintListe = Err.number
+    LLPrintListe2800 = Err.number
 
     If Mode = 1 Or Mode = 4 Then                                           'IL 07.11.2024 , Ver.: 6.7.101 :  Ablage hinzugefügt
 
@@ -1180,9 +1180,9 @@ Fehler:
     End If
 
     If glRet <> 0 Then
-        Call FehlerErklärung("SP52800B", "LLPrintListe LL-Fehler: " & glRet & ", j = " & j)
+        Call FehlerErklärung("SP52800B", "LLPrintListe2800 LL-Fehler: " & glRet & ", j = " & j)
     Else
-        Call FehlerErklärung("SP52800B", "LLPrintListe")
+        Call FehlerErklärung("SP52800B", "LLPrintListe2800")
     End If
 
 End Function
